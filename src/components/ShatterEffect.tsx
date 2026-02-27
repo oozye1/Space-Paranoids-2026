@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -31,8 +31,17 @@ interface ShatterEffectProps {
 
 export default function ShatterEffect({ position, quaternion, onComplete }: ShatterEffectProps) {
   const groupRef = useRef<THREE.Group>(null);
+  const lightRef = useRef<THREE.DirectionalLight>(null);
   const time = useRef(0);
   const groundY = -position.y;
+
+  // Attach the light's target to the group so it stays local
+  useEffect(() => {
+    if (lightRef.current && groupRef.current) {
+      groupRef.current.add(lightRef.current.target);
+      lightRef.current.target.position.set(0, 0, 0);
+    }
+  }, []);
 
   const [fragments] = useState(() => {
     const frags: Fragment[] = [];
@@ -102,8 +111,15 @@ export default function ShatterEffect({ position, quaternion, onComplete }: Shat
       return;
     }
 
-    groupRef.current.children.forEach((child, i) => {
-      if (i >= fragments.length) return;
+    // Fade the local shadow light with the debris
+    if (lightRef.current) {
+      lightRef.current.intensity = Math.max(0, 1.5 * (1 - time.current / 3.0));
+    }
+
+    const children = groupRef.current.children;
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (i >= fragments.length) continue;
       const f = fragments[i];
 
       f.velocity.y -= 12 * delta;
@@ -140,11 +156,27 @@ export default function ShatterEffect({ position, quaternion, onComplete }: Shat
         mat.emissiveIntensity = Math.max(0, 1.5 * (1 - time.current / 3.0));
         mat.opacity = Math.max(0, 1 - time.current / 3.5);
       }
-    });
+    }
   });
 
   return (
     <group ref={groupRef} position={position}>
+      {/* Local shadow light - tight frustum for high-res debris self-shadowing */}
+      <directionalLight
+        ref={lightRef}
+        position={[5, 40, 5]}
+        intensity={1.5}
+        castShadow
+        shadow-mapSize-width={1024}
+        shadow-mapSize-height={1024}
+        shadow-camera-left={-30}
+        shadow-camera-right={30}
+        shadow-camera-top={30}
+        shadow-camera-bottom={-30}
+        shadow-camera-near={1}
+        shadow-camera-far={80}
+        shadow-bias={-0.001}
+      />
       {fragments.map((f, i) => (
         <mesh
           key={i}
