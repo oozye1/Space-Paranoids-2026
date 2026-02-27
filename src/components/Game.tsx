@@ -10,23 +10,33 @@ import EnemyManager from './EnemyManager';
 import World from './World';
 import HUD from './HUD';
 import Explosion from './Explosion';
+import ShatterEffect from './ShatterEffect';
 
 function GameScene() {
   const isPlaying = useGameStore((state) => state.isPlaying);
-  const [explosions, setExplosions] = useState<{ id: number; position: THREE.Vector3; color: string; count: number }[]>([]);
+  const [explosions, setExplosions] = useState<{ id: number; position: THREE.Vector3; color: string; count: number; intensity: 'small' | 'medium' | 'large' }[]>([]);
+  const [shatters, setShatters] = useState<{ id: number; position: THREE.Vector3; quaternion: THREE.Quaternion }[]>([]);
 
-  const triggerExplosion = (position: THREE.Vector3, color: string, count: number = 20) => {
-    setExplosions(prev => [...prev, { id: Date.now() + Math.random(), position, color, count }]);
+  const triggerExplosion = (position: THREE.Vector3, color: string, count: number = 20, intensity: 'small' | 'medium' | 'large' = 'medium') => {
+    setExplosions(prev => [...prev, { id: Date.now() + Math.random(), position, color, count, intensity }]);
   };
 
   const removeExplosion = (id: number) => {
     setExplosions(prev => prev.filter(e => e.id !== id));
   };
+
+  const triggerShatter = (position: THREE.Vector3, quaternion: THREE.Quaternion) => {
+    setShatters(prev => [...prev, { id: Date.now() + Math.random(), position, quaternion }]);
+  };
+
+  const removeShatter = (id: number) => {
+    setShatters(prev => prev.filter(s => s.id !== id));
+  };
   
   return (
     <>
       <color attach="background" args={['#000000']} />
-      <fog attach="fog" args={['#000000', 10, 100]} />
+      <fog attach="fog" args={['#000000', 20, 150]} />
       
       <ambientLight intensity={0.2} />
       <pointLight position={[10, 10, 10]} intensity={1} color="#00ffff" />
@@ -34,19 +44,33 @@ function GameScene() {
       <World />
       
       {explosions.map(e => (
-        <Explosion 
-          key={e.id} 
-          position={e.position} 
-          color={e.color} 
-          count={e.count} 
-          onComplete={() => removeExplosion(e.id)} 
+        <Explosion
+          key={e.id}
+          position={e.position}
+          color={e.color}
+          count={e.count}
+          intensity={e.intensity}
+          onComplete={() => removeExplosion(e.id)}
+        />
+      ))}
+
+      {shatters.map(s => (
+        <ShatterEffect
+          key={s.id}
+          position={s.position}
+          quaternion={s.quaternion}
+          onComplete={() => removeShatter(s.id)}
         />
       ))}
       
       {isPlaying && (
         <>
-          <Player onShoot={(pos) => triggerExplosion(pos, '#00ffff', 5)} />
-          <EnemyManager onExplode={(pos) => triggerExplosion(pos, '#ff0000', 30)} />
+          <Player onShoot={(pos) => triggerExplosion(pos, '#00ffff', 12, 'small')} />
+          <EnemyManager onExplode={(pos, quat) => {
+            triggerExplosion(pos, '#ff3300', 40, 'large');
+            triggerShatter(pos, quat);
+            window.dispatchEvent(new CustomEvent('screen-shake', { detail: { intensity: 0.5 } }));
+          }} />
         </>
       )}
       

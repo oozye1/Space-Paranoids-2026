@@ -14,7 +14,8 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
   const [bullets, setBullets] = useState<{ id: number; startPosition: THREE.Vector3; direction: THREE.Vector3 }[]>([]);
   const lastFireTime = useRef(0);
   const playerRef = useRef<THREE.Group>(null);
-  
+  const shakeIntensity = useRef(0);
+
   // Movement state
   const keys = useRef({ w: false, a: false, s: false, d: false });
   const mouse = useRef({ x: 0, y: 0 });
@@ -54,18 +55,24 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
       }
     };
 
+    const handleShake = (e: any) => {
+      shakeIntensity.current = Math.max(shakeIntensity.current, e.detail?.intensity || 0.3);
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('screen-shake', handleShake);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('screen-shake', handleShake);
     };
-  }, []); // Empty dependency array is fine here as we use refs
+  }, []);
 
   const fireBullet = () => {
     if (!playerRef.current) return;
@@ -115,6 +122,13 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
     // Camera rotation
     camera.position.copy(playerRef.current.position);
     camera.position.y = 2; // Eye height
+
+    // Screen shake
+    if (shakeIntensity.current > 0.005) {
+      camera.position.x += (Math.random() - 0.5) * shakeIntensity.current * 2;
+      camera.position.y += (Math.random() - 0.5) * shakeIntensity.current;
+      shakeIntensity.current = Math.max(0, shakeIntensity.current - delta * 2);
+    }
 
     // Rotate camera based on mouse position
     const turnSpeed = 2.0;
