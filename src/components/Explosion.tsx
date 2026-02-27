@@ -28,7 +28,6 @@ interface EmberData {
 export default function Explosion({ position, color, onComplete, intensity = 'medium' }: ExplosionProps) {
   const groupRef = useRef<THREE.Group>(null);
   const flashRef = useRef<THREE.Mesh>(null);
-  const lightRef = useRef<THREE.PointLight>(null);
   const ringRef = useRef<THREE.Mesh>(null);
   const sparkGroupRef = useRef<THREE.Group>(null);
   const emberGroupRef = useRef<THREE.Group>(null);
@@ -36,9 +35,9 @@ export default function Explosion({ position, color, onComplete, intensity = 'me
 
   const config = useMemo(() => {
     switch (intensity) {
-      case 'small':  return { sparks: 12, embers: 0, flashSize: 0, ringSize: 0, duration: 0.8, lightPower: 0 };
-      case 'large':  return { sparks: 50, embers: 20, flashSize: 4, ringSize: 8, duration: 2.5, lightPower: 30 };
-      default:       return { sparks: 30, embers: 10, flashSize: 2.5, ringSize: 5, duration: 1.8, lightPower: 15 };
+      case 'small':  return { sparks: 8, embers: 0, flashSize: 0, ringSize: 0, duration: 0.6 };
+      case 'large':  return { sparks: 20, embers: 6, flashSize: 3, ringSize: 6, duration: 2.0 };
+      default:       return { sparks: 14, embers: 4, flashSize: 2, ringSize: 4, duration: 1.5 };
     }
   }, [intensity]);
 
@@ -95,12 +94,6 @@ export default function Explosion({ position, color, onComplete, intensity = 'me
       const fp = Math.min(time.current / 0.12, 1);
       flashRef.current.scale.setScalar(Math.max(0.01, config.flashSize * (1 - fp * fp)));
       (flashRef.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 1 - fp);
-    }
-
-    // Flash light
-    if (lightRef.current) {
-      const lp = Math.min(time.current / 0.3, 1);
-      lightRef.current.intensity = config.lightPower * (1 - lp * lp);
     }
 
     // Shockwave ring
@@ -176,9 +169,6 @@ export default function Explosion({ position, color, onComplete, intensity = 'me
           <sphereGeometry args={[1, 16, 16]} />
           <meshBasicMaterial color="#ffffff" transparent opacity={1} depthWrite={false} blending={THREE.AdditiveBlending} />
         </mesh>
-      )}
-      {hasFlash && (
-        <pointLight ref={lightRef} color={color} intensity={config.lightPower} distance={25} decay={2} />
       )}
       {hasRing && (
         <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]}>

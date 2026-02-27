@@ -62,7 +62,7 @@ export default function ShatterEffect({ position, quaternion, onComplete }: Shat
     });
 
     // Smaller debris fragments
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 10; i++) {
       const parent = RECOGNIZER_PARTS[Math.floor(Math.random() * RECOGNIZER_PARTS.length)];
       const localPos = new THREE.Vector3(
         parent.pos[0] + (Math.random() - 0.5) * parent.size[0],

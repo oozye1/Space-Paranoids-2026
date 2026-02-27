@@ -65,9 +65,8 @@ export default function Bullet({ startPosition, direction, onRemove }: BulletPro
 
   return (
     <mesh ref={meshRef} position={startPosition}>
-      <sphereGeometry args={[0.2, 8, 8]} />
+      <sphereGeometry args={[0.2, 6, 6]} />
       <meshBasicMaterial color="cyan" />
-      <pointLight intensity={0.5} distance={5} color="cyan" />
     </mesh>
   );
 }

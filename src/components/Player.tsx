@@ -18,12 +18,14 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
 
   // Movement state
   const keys = useRef({ w: false, a: false, s: false, d: false });
-  const mouse = useRef({ x: 0, y: 0 });
+  const yaw = useRef(0);
+  const isLocked = useRef(false);
 
   useEffect(() => {
     // Reset camera and player position on mount
     camera.position.set(0, 2, 0);
     camera.rotation.set(0, 0, 0);
+    yaw.current = 0;
     if (playerRef.current) {
       playerRef.current.position.set(0, 0, 0);
     }
@@ -34,7 +36,7 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
       if (e.key.toLowerCase() === 's') keys.current.s = true;
       if (e.key.toLowerCase() === 'd') keys.current.d = true;
     };
-    
+
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === 'w') keys.current.w = false;
       if (e.key.toLowerCase() === 'a') keys.current.a = false;
@@ -43,16 +45,26 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      if (!isLocked.current) return;
+      // Use movementX for smooth FPS-style turning that stops when mouse stops
+      yaw.current -= e.movementX * 0.002;
     };
 
     const handleMouseDown = () => {
+      // Request pointer lock on first click
+      if (!isLocked.current) {
+        document.body.requestPointerLock();
+        return;
+      }
       const now = Date.now();
       if (now - lastFireTime.current > FIRE_RATE) {
         fireBullet();
         lastFireTime.current = now;
       }
+    };
+
+    const handleLockChange = () => {
+      isLocked.current = document.pointerLockElement === document.body;
     };
 
     const handleShake = (e: any) => {
@@ -63,6 +75,7 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
     window.addEventListener('keyup', handleKeyUp);
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('pointerlockchange', handleLockChange);
     window.addEventListener('screen-shake', handleShake);
 
     return () => {
@@ -70,7 +83,9 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('pointerlockchange', handleLockChange);
       window.removeEventListener('screen-shake', handleShake);
+      if (document.pointerLockElement) document.exitPointerLock();
     };
   }, []);
 
@@ -130,11 +145,8 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
       shakeIntensity.current = Math.max(0, shakeIntensity.current - delta * 2);
     }
 
-    // Rotate camera based on mouse position
-    const turnSpeed = 2.0;
-    if (Math.abs(mouse.current.x) > 0.1) {
-        camera.rotation.y -= mouse.current.x * turnSpeed * delta;
-    }
+    // Apply yaw from pointer lock mouse delta
+    camera.rotation.set(0, yaw.current, 0);
   });
 
   // Listen for bullet hits to remove them

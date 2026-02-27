@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { Edges } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '../store';
 
@@ -100,7 +99,6 @@ function Recognizer({ position, onHit, playerPos }: {
   if (isDead) return null;
 
   const bodyColor = "#1a0000";
-  const edgeColor = "#ff3300";
 
   return (
     <group ref={ref} position={position}>
@@ -108,61 +106,48 @@ function Recognizer({ position, onHit, playerPos }: {
       {/* Main head beam - wide and flat */}
       <mesh position={[0, 7, 0]}>
         <boxGeometry args={[12, 1.5, 3.5]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#660000" emissiveIntensity={0.6} />
       </mesh>
       {/* Cockpit ridge - raised center sensor area */}
       <mesh position={[0, 7.8, 0.3]}>
         <boxGeometry args={[3.5, 0.5, 1.8]} />
-        <meshStandardMaterial color={bodyColor} emissive="#ff0000" emissiveIntensity={0.8} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#ff0000" emissiveIntensity={1.0} />
       </mesh>
       {/* Under-head chin panel */}
       <mesh position={[0, 6, 0]}>
         <boxGeometry args={[9, 0.4, 2.8]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.4} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#440000" emissiveIntensity={0.5} />
       </mesh>
 
       {/* === LEFT LEG === */}
       <mesh position={[-3.5, 4.2, 0]} rotation={[0, 0, 0.12]}>
         <boxGeometry args={[2, 3, 2.8]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#550000" emissiveIntensity={0.6} />
       </mesh>
       <mesh position={[-4.8, 1.5, 0]} rotation={[0, 0, 0.12]}>
         <boxGeometry args={[2, 3, 2.8]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#550000" emissiveIntensity={0.6} />
       </mesh>
       {/* Left foot */}
       <mesh position={[-6, 0.25, 0]}>
         <boxGeometry args={[2.8, 0.5, 3.5]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#550000" emissiveIntensity={0.6} />
       </mesh>
 
       {/* === RIGHT LEG === */}
       <mesh position={[3.5, 4.2, 0]} rotation={[0, 0, -0.12]}>
         <boxGeometry args={[2, 3, 2.8]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#550000" emissiveIntensity={0.6} />
       </mesh>
       <mesh position={[4.8, 1.5, 0]} rotation={[0, 0, -0.12]}>
         <boxGeometry args={[2, 3, 2.8]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#550000" emissiveIntensity={0.6} />
       </mesh>
       {/* Right foot */}
       <mesh position={[6, 0.25, 0]}>
         <boxGeometry args={[2.8, 0.5, 3.5]} />
-        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
-        <Edges color={edgeColor} />
+        <meshStandardMaterial color={bodyColor} emissive="#550000" emissiveIntensity={0.6} />
       </mesh>
-
-      {/* Glow lighting */}
-      <pointLight position={[0, 7, 0]} color="#ff3300" intensity={4} distance={20} />
-      <pointLight position={[0, 3, 0]} color="#ff0000" intensity={2} distance={12} />
     </group>
   );
 }

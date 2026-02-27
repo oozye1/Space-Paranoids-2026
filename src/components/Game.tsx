@@ -38,8 +38,7 @@ function GameScene() {
       <color attach="background" args={['#000000']} />
       <fog attach="fog" args={['#000000', 30, 250]} />
       
-      <ambientLight intensity={0.2} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#00ffff" />
+      <ambientLight intensity={0.4} />
       
       <World />
       
@@ -95,7 +94,7 @@ export default function Game() {
 
   return (
     <div className="w-full h-screen bg-black relative overflow-hidden font-mono">
-      <Canvas shadows dpr={[1, 2]}>
+      <Canvas dpr={[1, 1.5]}>
         <Suspense fallback={null}>
           <GameScene />
         </Suspense>
@@ -117,7 +116,7 @@ export default function Game() {
               Start Game
             </button>
             <div className="mt-8 text-cyan-700 text-sm">
-              WASD to Move • MOUSE to Aim • CLICK to Shoot
+              CLICK to Lock Mouse • WASD to Move • MOUSE to Aim • CLICK to Shoot
             </div>
           </div>
         </div>

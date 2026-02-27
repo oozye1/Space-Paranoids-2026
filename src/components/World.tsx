@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { Edges } from '@react-three/drei';
 
 const WALL_HEIGHT = 40;
 const WALL_THICKNESS = 2;
@@ -107,38 +106,28 @@ export default function World() {
     <group>
       {/* Floor Grid */}
       <gridHelper
-        args={[GRID_SIZE, 100, 0x00ffff, 0x0044aa]}
+        args={[GRID_SIZE, 50, 0x00ffff, 0x003366]}
         position={[0, -2, 0]}
       />
 
       {/* Ceiling Grid */}
       <gridHelper
-        args={[GRID_SIZE, 40, 0x4400aa, 0x220055]}
+        args={[GRID_SIZE, 20, 0x4400aa, 0x220055]}
         position={[0, WALL_HEIGHT - 2, 0]}
         rotation={[Math.PI, 0, 0]}
       />
 
-      {/* Maze Walls - solid dark with cyan edge glow */}
+      {/* Maze Walls - solid dark with emissive edges (no Edges/pointLights for performance) */}
       {walls.map((wall, i) => (
         <mesh key={i} position={wall.pos}>
           <boxGeometry args={wall.size} />
           <meshStandardMaterial
             color="#000d1a"
-            emissive="#001133"
-            emissiveIntensity={0.3}
+            emissive="#004488"
+            emissiveIntensity={0.4}
           />
-          <Edges color="#0088cc" />
         </mesh>
       ))}
-
-      {/* Corridor lighting - spaced along major paths */}
-      {Array.from({ length: 20 }).map((_, i) => {
-        const x = (i % 5 - 2) * 100;
-        const z = (Math.floor(i / 5) - 2) * 100 + 30;
-        return (
-          <pointLight key={`pl-${i}`} position={[x, 1, z]} color="#00ffff" intensity={0.4} distance={40} decay={2} />
-        );
-      })}
     </group>
   );
 }
