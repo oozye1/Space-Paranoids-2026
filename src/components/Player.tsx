@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '../store';
+import { resolveCircleWallCollisions } from '../mazeData';
 import Bullet from './Bullet';
 
 const PLAYER_SPEED = 15;
@@ -23,11 +24,11 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
 
   useEffect(() => {
     // Reset camera and player position on mount
-    camera.position.set(0, 2, 0);
+    camera.position.set(20, 2, -70);
     camera.rotation.set(0, 0, 0);
     yaw.current = 0;
     if (playerRef.current) {
-      playerRef.current.position.set(0, 0, 0);
+      playerRef.current.position.set(20, 0, -70);
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -129,10 +130,11 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
     // Constrain movement to XZ plane
     playerRef.current.position.x += direction.x;
     playerRef.current.position.z += direction.z;
-    
-    // Keep player within bounds
-    playerRef.current.position.x = THREE.MathUtils.clamp(playerRef.current.position.x, -245, 245);
-    playerRef.current.position.z = THREE.MathUtils.clamp(playerRef.current.position.z, -245, 245);
+
+    // Wall collision - player slides along walls
+    const resolved = resolveCircleWallCollisions(playerRef.current.position.x, playerRef.current.position.z, 1.5);
+    playerRef.current.position.x = resolved.x;
+    playerRef.current.position.z = resolved.z;
 
     // Camera rotation
     camera.position.copy(playerRef.current.position);
@@ -164,7 +166,7 @@ export default function Player({ onShoot }: { onShoot: (pos: THREE.Vector3) => v
   }, [onShoot]);
 
   return (
-    <group ref={playerRef} position={[0, 0, 0]}>
+    <group ref={playerRef} position={[20, 0, -70]}>
       {bullets.map(bullet => (
         <Bullet 
           key={bullet.id}

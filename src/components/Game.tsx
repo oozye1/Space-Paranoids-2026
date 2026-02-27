@@ -38,7 +38,20 @@ function GameScene() {
       <color attach="background" args={['#000000']} />
       <fog attach="fog" args={['#000000', 30, 250]} />
       
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.3} />
+      <directionalLight
+        position={[50, 120, 30]}
+        intensity={0.8}
+        castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-left={-200}
+        shadow-camera-right={200}
+        shadow-camera-top={200}
+        shadow-camera-bottom={-200}
+        shadow-camera-near={1}
+        shadow-camera-far={300}
+      />
       
       <World />
       
@@ -94,7 +107,7 @@ export default function Game() {
 
   return (
     <div className="w-full h-screen bg-black relative overflow-hidden font-mono">
-      <Canvas dpr={[1, 1.5]}>
+      <Canvas shadows dpr={[1, 1.5]}>
         <Suspense fallback={null}>
           <GameScene />
         </Suspense>

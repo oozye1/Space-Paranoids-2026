@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '../store';
+import { resolveCircleWallCollisions } from '../mazeData';
 
 const NORMAL_EMISSIVE = new THREE.Color(0x330000);
 const FLASH_EMISSIVE = new THREE.Color(0xffffff);
@@ -34,6 +35,12 @@ function Recognizer({ position, onHit, playerPos }: {
     toPlayer.normalize();
 
     ref.current.position.add(toPlayer.clone().multiplyScalar(speed * delta));
+
+    // Resolve wall collisions - enemy slides along walls
+    const resolved = resolveCircleWallCollisions(ref.current.position.x, ref.current.position.z, 7);
+    ref.current.position.x = resolved.x;
+    ref.current.position.z = resolved.z;
+
     ref.current.lookAt(playerPos.x, ref.current.position.y, playerPos.z);
 
     // Hit flash - smooth decay

@@ -151,6 +151,8 @@ export default function ShatterEffect({ position, quaternion, onComplete }: Shat
           position={f.position}
           rotation={f.rotation}
           scale={[f.size[0], f.size[1], f.size[2]]}
+          castShadow
+          receiveShadow
         >
           <boxGeometry args={[1, 1, 1]} />
           <meshStandardMaterial
