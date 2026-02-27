@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx vite build)",
+      "Bash(npm run build)",
+      "Bash(npm install)",
+      "Bash(git add src/components/ShatterEffect.tsx src/components/EnemyManager.tsx src/components/Explosion.tsx src/components/Game.tsx src/components/Player.tsx src/components/World.tsx)"
+    ]
+  }
+}

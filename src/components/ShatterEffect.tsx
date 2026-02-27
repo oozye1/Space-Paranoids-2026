@@ -2,17 +2,17 @@ import { useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-// Recognizer structural parts - must match the Recognizer mesh layout
+// Must match the Recognizer mesh layout in EnemyManager
 const RECOGNIZER_PARTS = [
-  { pos: [-1.8, 4.5, 0], size: [3.2, 0.8, 2.5] },
-  { pos: [1.8, 4.5, 0], size: [3.2, 0.8, 2.5] },
-  { pos: [0, 5.2, 0], size: [2, 0.4, 1.2] },
-  { pos: [-1.8, 3.2, 0], size: [1.2, 1.8, 2.2] },
-  { pos: [-2.8, 1.2, 0], size: [1.2, 2.2, 2.2] },
-  { pos: [-3.8, 0.2, 0], size: [2.2, 0.4, 3] },
-  { pos: [1.8, 3.2, 0], size: [1.2, 1.8, 2.2] },
-  { pos: [2.8, 1.2, 0], size: [1.2, 2.2, 2.2] },
-  { pos: [3.8, 0.2, 0], size: [2.2, 0.4, 3] },
+  { pos: [0, 7, 0], size: [12, 1.5, 3.5] },
+  { pos: [0, 7.8, 0.3], size: [3.5, 0.5, 1.8] },
+  { pos: [0, 6, 0], size: [9, 0.4, 2.8] },
+  { pos: [-3.5, 4.2, 0], size: [2, 3, 2.8] },
+  { pos: [-4.8, 1.5, 0], size: [2, 3, 2.8] },
+  { pos: [-6, 0.25, 0], size: [2.8, 0.5, 3.5] },
+  { pos: [3.5, 4.2, 0], size: [2, 3, 2.8] },
+  { pos: [4.8, 1.5, 0], size: [2, 3, 2.8] },
+  { pos: [6, 0.25, 0], size: [2.8, 0.5, 3.5] },
 ];
 
 interface Fragment {
@@ -137,7 +137,7 @@ export default function ShatterEffect({ position, quaternion, onComplete }: Shat
       const mesh = child as THREE.Mesh;
       if (mesh.material) {
         const mat = mesh.material as THREE.MeshStandardMaterial;
-        mat.emissiveIntensity = Math.max(0, 2 * (1 - time.current / 3.0));
+        mat.emissiveIntensity = Math.max(0, 1.5 * (1 - time.current / 3.0));
         mat.opacity = Math.max(0, 1 - time.current / 3.5);
       }
     });
@@ -154,10 +154,9 @@ export default function ShatterEffect({ position, quaternion, onComplete }: Shat
         >
           <boxGeometry args={[1, 1, 1]} />
           <meshStandardMaterial
-            color="#ff3300"
+            color="#1a0000"
             emissive="#ff0000"
-            emissiveIntensity={2}
-            wireframe
+            emissiveIntensity={1.5}
             transparent
             opacity={1}
           />

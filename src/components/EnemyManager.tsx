@@ -1,12 +1,13 @@
 import { useRef, useState, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
+import { Edges } from '@react-three/drei';
 import * as THREE from 'three';
 import { useGameStore } from '../store';
 
-const NORMAL_EMISSIVE = new THREE.Color(0xff0000);
+const NORMAL_EMISSIVE = new THREE.Color(0x330000);
 const FLASH_EMISSIVE = new THREE.Color(0xffffff);
 
-// Recognizer enemy - TRON-accurate multi-part arch shape
+// Recognizer enemy - TRON-accurate multi-part arch with solid surfaces + edge glow
 function Recognizer({ position, onHit, playerPos }: {
   position: THREE.Vector3;
   onHit: (pos: THREE.Vector3, quat: THREE.Quaternion) => void;
@@ -19,13 +20,13 @@ function Recognizer({ position, onHit, playerPos }: {
   const loseLife = useGameStore(state => state.loseLife);
   const lastDamageTime = useRef(0);
   const hitFlash = useRef(0);
-  const baseHeight = useRef(2 + Math.random() * 8); // Enemies fly at varying heights
+  const baseHeight = useRef(-1 + Math.random() * 3);
 
   useFrame((state, delta) => {
     if (isDead || !ref.current) return;
 
-    // Float at varying heights
-    ref.current.position.y = baseHeight.current + Math.sin(state.clock.elapsedTime * 2 + position.x) * 1.5;
+    // Float with gentle bob
+    ref.current.position.y = baseHeight.current + Math.sin(state.clock.elapsedTime * 1.5 + position.x) * 1;
 
     // Move towards player
     const toPlayer = new THREE.Vector3().subVectors(playerPos, ref.current.position);
@@ -43,14 +44,20 @@ function Recognizer({ position, onHit, playerPos }: {
       ref.current.traverse(child => {
         if ((child as THREE.Mesh).isMesh) {
           const mat = (child as THREE.Mesh).material as THREE.MeshStandardMaterial;
-          mat.emissive.copy(NORMAL_EMISSIVE).lerp(FLASH_EMISSIVE, flashAmount);
-          mat.emissiveIntensity = 2 + flashAmount * 4;
+          if (mat.emissive) {
+            mat.emissive.copy(NORMAL_EMISSIVE).lerp(FLASH_EMISSIVE, flashAmount);
+            mat.emissiveIntensity = 0.5 + flashAmount * 5;
+          }
         }
       });
     }
 
-    // Player collision
-    if (distToPlayer < 6) {
+    // Player collision - use center of recognizer (y+4 from base)
+    const centerPos = ref.current.position.clone();
+    centerPos.y += 4;
+    const playerCenter = playerPos.clone();
+    playerCenter.y = 2;
+    if (centerPos.distanceTo(playerCenter) < 8) {
       const now = state.clock.elapsedTime;
       if (now - lastDamageTime.current > 2) {
         loseLife();
@@ -66,9 +73,13 @@ function Recognizer({ position, onHit, playerPos }: {
 
       const bulletPos = e.detail.position as THREE.Vector3;
       const bulletId = e.detail.id;
-      const distance = ref.current.position.distanceTo(bulletPos);
 
-      if (distance < 5) {
+      // Check from recognizer center mass (y+4 from base)
+      const centerPos = ref.current.position.clone();
+      centerPos.y += 4;
+      const distance = centerPos.distanceTo(bulletPos);
+
+      if (distance < 7) {
         window.dispatchEvent(new CustomEvent('bullet-hit', { detail: { id: bulletId, position: bulletPos } }));
         health.current -= 1;
 
@@ -88,56 +99,70 @@ function Recognizer({ position, onHit, playerPos }: {
 
   if (isDead) return null;
 
+  const bodyColor = "#1a0000";
+  const edgeColor = "#ff3300";
+
   return (
     <group ref={ref} position={position}>
-      {/* Top beam - left half */}
-      <mesh position={[-1.8, 4.5, 0]}>
-        <boxGeometry args={[3.2, 0.8, 2.5]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+      {/* === HEAD SECTION === */}
+      {/* Main head beam - wide and flat */}
+      <mesh position={[0, 7, 0]}>
+        <boxGeometry args={[12, 1.5, 3.5]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Top beam - right half */}
-      <mesh position={[1.8, 4.5, 0]}>
-        <boxGeometry args={[3.2, 0.8, 2.5]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+      {/* Cockpit ridge - raised center sensor area */}
+      <mesh position={[0, 7.8, 0.3]}>
+        <boxGeometry args={[3.5, 0.5, 1.8]} />
+        <meshStandardMaterial color={bodyColor} emissive="#ff0000" emissiveIntensity={0.8} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Cockpit ridge */}
-      <mesh position={[0, 5.2, 0]}>
-        <boxGeometry args={[2, 0.4, 1.2]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+      {/* Under-head chin panel */}
+      <mesh position={[0, 6, 0]}>
+        <boxGeometry args={[9, 0.4, 2.8]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.4} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Left upper leg - angled outward */}
-      <mesh position={[-1.8, 3.2, 0]} rotation={[0, 0, 0.12]}>
-        <boxGeometry args={[1.2, 1.8, 2.2]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+
+      {/* === LEFT LEG === */}
+      <mesh position={[-3.5, 4.2, 0]} rotation={[0, 0, 0.12]}>
+        <boxGeometry args={[2, 3, 2.8]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Left lower leg - angled outward */}
-      <mesh position={[-2.8, 1.2, 0]} rotation={[0, 0, 0.12]}>
-        <boxGeometry args={[1.2, 2.2, 2.2]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+      <mesh position={[-4.8, 1.5, 0]} rotation={[0, 0, 0.12]}>
+        <boxGeometry args={[2, 3, 2.8]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Left foot - flared */}
-      <mesh position={[-3.8, 0.2, 0]}>
-        <boxGeometry args={[2.2, 0.4, 3]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+      {/* Left foot */}
+      <mesh position={[-6, 0.25, 0]}>
+        <boxGeometry args={[2.8, 0.5, 3.5]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Right upper leg - angled outward */}
-      <mesh position={[1.8, 3.2, 0]} rotation={[0, 0, -0.12]}>
-        <boxGeometry args={[1.2, 1.8, 2.2]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+
+      {/* === RIGHT LEG === */}
+      <mesh position={[3.5, 4.2, 0]} rotation={[0, 0, -0.12]}>
+        <boxGeometry args={[2, 3, 2.8]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Right lower leg - angled outward */}
-      <mesh position={[2.8, 1.2, 0]} rotation={[0, 0, -0.12]}>
-        <boxGeometry args={[1.2, 2.2, 2.2]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+      <mesh position={[4.8, 1.5, 0]} rotation={[0, 0, -0.12]}>
+        <boxGeometry args={[2, 3, 2.8]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
+        <Edges color={edgeColor} />
       </mesh>
-      {/* Right foot - flared */}
-      <mesh position={[3.8, 0.2, 0]}>
-        <boxGeometry args={[2.2, 0.4, 3]} />
-        <meshStandardMaterial color="#ff3300" emissive="#ff0000" emissiveIntensity={2} wireframe />
+      {/* Right foot */}
+      <mesh position={[6, 0.25, 0]}>
+        <boxGeometry args={[2.8, 0.5, 3.5]} />
+        <meshStandardMaterial color={bodyColor} emissive="#330000" emissiveIntensity={0.5} />
+        <Edges color={edgeColor} />
       </mesh>
+
       {/* Glow lighting */}
-      <pointLight position={[0, 4.5, 0]} color="red" intensity={3} distance={15} />
-      <pointLight position={[0, 2, 0]} color="#ff3300" intensity={1.5} distance={10} />
+      <pointLight position={[0, 7, 0]} color="#ff3300" intensity={4} distance={20} />
+      <pointLight position={[0, 3, 0]} color="#ff0000" intensity={2} distance={12} />
     </group>
   );
 }
@@ -160,7 +185,7 @@ export default function EnemyManager({ onExplode }: { onExplode: (pos: THREE.Vec
         const radius = 60 + Math.random() * 20;
         setEnemies(prev => [...prev, {
           id: Date.now(),
-          position: new THREE.Vector3(Math.cos(angle) * radius, 2, Math.sin(angle) * radius)
+          position: new THREE.Vector3(Math.cos(angle) * radius, 0, Math.sin(angle) * radius)
         }]);
       }
     }, 3000);

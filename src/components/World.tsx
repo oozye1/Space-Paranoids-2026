@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { Edges } from '@react-three/drei';
 
 const WALL_HEIGHT = 40;
 const WALL_THICKNESS = 2;
 const MAZE_SIZE = 90;
 
-// Simple maze layout - walls defined as [x1, z1, x2, z2] (start point to end point)
-// Creates corridors the player navigates while enemies fly over/around
 function generateMazeWalls() {
   const walls: { pos: [number, number, number]; size: [number, number, number] }[] = [];
 
@@ -18,41 +16,31 @@ function generateMazeWalls() {
     walls.push({ pos: [cx, WALL_HEIGHT / 2 - 2, cz], size: [lx, WALL_HEIGHT, lz] });
   };
 
-  // Outer boundary walls
-  addWall(-MAZE_SIZE, -MAZE_SIZE, MAZE_SIZE, -MAZE_SIZE);  // South
-  addWall(-MAZE_SIZE, MAZE_SIZE, MAZE_SIZE, MAZE_SIZE);    // North
-  addWall(-MAZE_SIZE, -MAZE_SIZE, -MAZE_SIZE, MAZE_SIZE);  // West
-  addWall(MAZE_SIZE, -MAZE_SIZE, MAZE_SIZE, MAZE_SIZE);    // East
+  // Outer boundary
+  addWall(-MAZE_SIZE, -MAZE_SIZE, MAZE_SIZE, -MAZE_SIZE);
+  addWall(-MAZE_SIZE, MAZE_SIZE, MAZE_SIZE, MAZE_SIZE);
+  addWall(-MAZE_SIZE, -MAZE_SIZE, -MAZE_SIZE, MAZE_SIZE);
+  addWall(MAZE_SIZE, -MAZE_SIZE, MAZE_SIZE, MAZE_SIZE);
 
-  // Interior maze walls - simple corridors with gaps for navigation
-  // Horizontal walls (running along X)
+  // Interior maze walls - corridors with gaps
   addWall(-60, -50, -10, -50);
   addWall(20, -50, 70, -50);
-
   addWall(-70, -20, -30, -20);
   addWall(0, -20, 50, -20);
-
   addWall(-50, 10, 0, 10);
   addWall(30, 10, 80, 10);
-
   addWall(-80, 40, -20, 40);
   addWall(10, 40, 60, 40);
-
   addWall(-40, 65, 40, 65);
 
-  // Vertical walls (running along Z)
   addWall(-50, -80, -50, -30);
   addWall(-50, -10, -50, 30);
-
   addWall(-20, -70, -20, -25);
   addWall(-20, 15, -20, 55);
-
   addWall(15, -60, 15, -5);
   addWall(15, 25, 15, 75);
-
   addWall(50, -80, 50, -30);
   addWall(50, 0, 50, 50);
-
   addWall(-70, -70, -70, 0);
   addWall(70, -40, 70, 40);
 
@@ -70,31 +58,23 @@ export default function World() {
         position={[0, -2, 0]}
       />
 
-      {/* Ceiling Grid (high up, faint) */}
+      {/* Ceiling Grid */}
       <gridHelper
         args={[200, 20, 0x4400aa, 0x220055]}
         position={[0, WALL_HEIGHT - 2, 0]}
         rotation={[Math.PI, 0, 0]}
       />
 
-      {/* Maze Walls - extremely tall, TRON aesthetic */}
+      {/* Maze Walls - solid dark with cyan edge glow */}
       {walls.map((wall, i) => (
         <mesh key={i} position={wall.pos}>
           <boxGeometry args={wall.size} />
           <meshStandardMaterial
-            color="#001133"
-            emissive="#0044aa"
-            emissiveIntensity={0.5}
-            wireframe
+            color="#000d1a"
+            emissive="#001133"
+            emissiveIntensity={0.3}
           />
-        </mesh>
-      ))}
-
-      {/* Wall edge glow strips - accent lights along base of some walls */}
-      {walls.slice(0, 4).map((wall, i) => (
-        <mesh key={`glow-${i}`} position={[wall.pos[0], -1.8, wall.pos[2]]}>
-          <boxGeometry args={[wall.size[0], 0.1, wall.size[2]]} />
-          <meshBasicMaterial color="#00ffff" transparent opacity={0.3} />
+          <Edges color="#0088cc" />
         </mesh>
       ))}
 
