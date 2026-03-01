@@ -14,10 +14,10 @@ interface GameState {
 
 export const useGameStore = create<GameState>((set) => ({
   score: 0,
-  lives: 3,
+  lives: 5,
   isPlaying: false,
   isGameOver: false,
-  startGame: () => set({ isPlaying: true, isGameOver: false, score: 0, lives: 3 }),
+  startGame: () => set({ isPlaying: true, isGameOver: false, score: 0, lives: 5 }),
   endGame: () => set({ isPlaying: false, isGameOver: true }),
   addScore: (points) => set((state) => ({ score: state.score + points })),
   loseLife: () => set((state) => {
@@ -27,5 +27,5 @@ export const useGameStore = create<GameState>((set) => ({
     }
     return { lives: newLives };
   }),
-  resetGame: () => set({ score: 0, lives: 3, isPlaying: false, isGameOver: false }),
+  resetGame: () => set({ score: 0, lives: 5, isPlaying: false, isGameOver: false }),
 }));

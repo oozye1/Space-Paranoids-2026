@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useGameStore } from '../store';
 import { resolveCircleWallCollisions } from '../mazeData';
+import { sound } from '../audio/SoundManager';
 
 const NORMAL_EMISSIVE = new THREE.Color(0x330000);
 const FLASH_EMISSIVE = new THREE.Color(0xffffff);
@@ -67,6 +68,9 @@ function Recognizer({ position, onHit, playerPos }: {
       const now = state.clock.elapsedTime;
       if (now - lastDamageTime.current > 2) {
         loseLife();
+        sound.damage();
+        window.dispatchEvent(new CustomEvent('player-damage'));
+        window.dispatchEvent(new CustomEvent('screen-shake', { detail: { intensity: 0.3 } }));
         lastDamageTime.current = now;
         ref.current.position.sub(toPlayer.clone().multiplyScalar(10));
       }
